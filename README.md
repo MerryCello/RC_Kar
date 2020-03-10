@@ -17,7 +17,7 @@ Give examples
 
 ## Authors
 
-* **Kevin Foniciello** - *Initial work* - [GrumpyCello](https://github.com/GrumpyCello)
-* **Kenny Smith** - *Material Expert* - [Creastacean](https://github.com/Creastacean)
-* **Kobe Kennerley** - *Material Expert* - [KobeKennerley98](https://github.com/KobeKennerley98)
+* **Kevin Foniciello** - *Initial work/ComputerEngineer* - [GrumpyCello](https://github.com/GrumpyCello)
+* **Kenny Smith** - *Material Expert/Computer Engineer* - [Creastacean](https://github.com/Creastacean)
+* **Kobe Kennerley** - *Computer Engineer* - [KobeKennerley98](https://github.com/KobeKennerley98)
 
