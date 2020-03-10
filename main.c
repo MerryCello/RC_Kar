@@ -19,6 +19,7 @@ void main(void)
 }
 
 //changes
+//chimichanga==pie
 /********************
  * Remote main.c code
  ********************/
