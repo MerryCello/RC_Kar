@@ -136,10 +136,42 @@ char dataReceived(void) {
     }
 }
 
+/***************************
+ * SEND_DATA
+ * does a thing, not sure what
+ * oh, it sets up the HM10 for use
+ * like command line for the HM10 :)
+ ***************************/
+void sendData(char *data, char * ack, chat *err, const int timeout){
+    long int time = 0;
+    memset(RXData, 0 sizeof(RXData));
+    buf_ind = 0;
+
+    while (*data != 0x00)
+        UART_transmitData(EUSCI_A2_BASE, *data++);
+
+    while(timeout > time){
+        time++;
+        delay_ms(1);
+        if(strstr(RXData, ack) != NULL) break;
+        elseif(strstr(RXData, err) != NULL) while(1);
+    }
+    delay_ms(100);
+}
+
 /********************
  * Remote main.c code
  ********************/
-//void main(void)
-//{
-//    WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;     // stop watchdog timer
-//}
+/*#define FORWARD BIT7
+#define BACKWARD BIT6
+#define LEFT BIT4
+#define Right BIT5
+void main(void)
+{
+    WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;     // stop watchdog timer
+
+}
+
+*/
+
+
