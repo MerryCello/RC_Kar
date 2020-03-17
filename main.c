@@ -1,11 +1,14 @@
 #include "msp.h"
 #include "stdbool.h"
 
+#define CLOCK_SPEED 3000000
+#define BAUD_RATE 9600
+
 // Signals to control car
 #define SIGNAL_MOTOR_1_STOP     0x10
 #define SIGNAL_MOTOR_1_FORWARD  0x11
 #define SIGNAL_MOTOR_1_BACKWARD 0x12
-#define SIGNAL_MOTOR_1_STOP     0x20
+#define SIGNAL_MOTOR_2_STOP     0x20
 #define SIGNAL_MOTOR_2_FORWARD  0x21
 #define SIGNAL_MOTOR_2_BACKWARD 0x22
 
@@ -25,7 +28,7 @@
 #define TRANSMITTER BIT2
 
 
-void setup(DIO_PORT_Odd_Interruptable_Type*, uint16_t, uint16_t, DIO_PORT_Odd_Interruptable_Type*, uint16_t, uint16_t);
+void setup(DIO_PORT_Even_Interruptable_Type*, uint16_t, uint16_t, DIO_PORT_Odd_Interruptable_Type*, uint16_t, uint16_t);
 void initHMslave(void);
 void handleClientBLE(void);
 void sendData(char *data, char *ack, char *err, const int timeout);
@@ -41,12 +44,34 @@ void main(void)
     setup(P4, MOTOR_1_FORWARD | MOTOR_1_BACKWARD, MOTOR_2_FORWARD | MOTOR_2_BACKWARD,
           P3, RECEIVER, TRANSMITTER);
 
+    char data;
     while(true) {
 //        handleClientBLE();
+        data = dataReceived();
 
-        switch (dataReceived()) {
-            case SIGNAL_MOTOR_1_FORWARD:
-                break;
+        if (data == SIGNAL_MOTOR_1_STOP) {
+            P4->OUT &= MOTOR_1_STOP; // set motor_1 to off
+        } else {
+            if (data == SIGNAL_MOTOR_1_FORWARD) {
+                P4->OUT &= MOTOR_1_STOP;
+                P4->OUT |= MOTOR_1_FORWARD;
+            }
+            if (data == SIGNAL_MOTOR_1_BACKWARD) {
+                P4->OUT &= MOTOR_1_STOP;
+                P4->OUT |= MOTOR_1_BACKWARD;
+            }
+        }
+        if (data == SIGNAL_MOTOR_2_STOP) {
+            P4->OUT &= MOTOR_2_STOP; // set motor_2 to off
+        } else {
+            if (data == SIGNAL_MOTOR_2_FORWARD) {
+                P4->OUT &= MOTOR_2_STOP; // set motor_2 to off
+                P4->OUT |= MOTOR_2_FORWARD;
+            }
+            if (data == SIGNAL_MOTOR_2_BACKWARD) {
+                P4->OUT &= MOTOR_2_STOP; // set motor_2 to off
+                P4->OUT |= MOTOR_2_BACKWARD;
+            }
         }
     }
 }
@@ -55,7 +80,7 @@ void main(void)
  * SETUP
  ********************/
 void setup(
-    DIO_PORT_Odd_Interruptable_Type* motorsPort, // I/O Port
+    DIO_PORT_Even_Interruptable_Type* motorsPort, // I/O Port
     uint16_t motorPin_1,
     uint16_t motorPin_2,
     DIO_PORT_Odd_Interruptable_Type* rtPort, // Receiver/Transmitter Port
@@ -97,21 +122,21 @@ void initHMslave(void) {
 }
 
 void handleClientBLE(void) {
-    char receivedData[1000] = "";
-
-    if(buf_ind>0) {
-        delay_ms(1000);
-        strncpy(receivedData, RXData, buf_ind);
-        memset(RXData, 0, sizeof(RXData));
-        buf_ind = 0;
-    }
-
-    if(strstr(receivedData, "D") != NULL || strstr(receivedData, "d") != NULL) {
-        // do something
-    }
-    else if(strstr(receivedData, "S") != NULL || strstr(receivedData, "s") != NULL) {
-        // do something else
-    }
+//    char receivedData[1000] = "";
+//
+//    if(buf_ind>0) {
+//        delay_ms(1000);
+//        strncpy(receivedData, RXData, buf_ind);
+//        memset(RXData, 0, sizeof(RXData));
+//        buf_ind = 0;
+//    }
+//
+//    if(strstr(receivedData, "D") != NULL || strstr(receivedData, "d") != NULL) {
+//        // do something
+//    }
+//    else if(strstr(receivedData, "S") != NULL || strstr(receivedData, "s") != NULL) {
+//        // do something else
+//    }
 }
 
 /**
