@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <string.h>
 
-//#define CAR
-#define REMOTE
+#define CAR
+//#define REMOTE
 
 #define CLOCK_SPEED 3000000
 #define BAUD_RATE 9600
@@ -40,9 +40,8 @@
 
 // macro defines for the Car
 #ifdef CAR
-        // on port 3
-#define MOTOR_1 P3
         // on port 4
+    #define MOTOR_PORT P4
     #define MOTOR_1_FORWARD  BIT2
     #define MOTOR_1_BACKWARD BIT3
     #define MOTOR_1_STOP     ~(BIT2 | BIT3)
@@ -67,36 +66,30 @@
  ********************/
 void main(void)
 {
-    setup(P4, MOTOR_1_FORWARD | MOTOR_1_BACKWARD, MOTOR_2_FORWARD | MOTOR_2_BACKWARD,
-          P3, RECEIVER, TRANSMITTER);
+    setup(MOTOR_PORT, MOTOR_1_FORWARD | MOTOR_1_BACKWARD, MOTOR_2_FORWARD | MOTOR_2_BACKWARD,
+          RT_PORT, RECEIVER, TRANSMITTER);
 
     char data;
     while(true) {
 //        handleClientBLE();
         data = dataReceived();
 
-        if (data == SIGNAL_MOTOR_1_STOP) {
-            P4->OUT &= MOTOR_1_STOP; // set motor_1 to off
+        if (data == SIGNAL_STOP) {
+            MOTOR_PORT->OUT &= MOTOR_1_STOP; // set motor_1 to off
+            MOTOR_PORT->OUT &= MOTOR_2_STOP; // set motor_2 to off
         } else {
-            if (data == SIGNAL_MOTOR_1_FORWARD) {
-                P4->OUT &= MOTOR_1_STOP;
-                P4->OUT |= MOTOR_1_FORWARD;
+            MOTOR_PORT->OUT &= (MOTOR_1_STOP | MOTOR_2_STOP);
+            if (data == SIGNAL_FORWARD) {
+                MOTOR_PORT->OUT |= (MOTOR_1_FORWARD | MOTOR_2_FORWARD);
             }
-            if (data == SIGNAL_MOTOR_1_BACKWARD) {
-                P4->OUT &= MOTOR_1_STOP;
-                P4->OUT |= MOTOR_1_BACKWARD;
+            if (data == SIGNAL_BACKWARD) {
+                MOTOR_PORT->OUT |= (MOTOR_1_BACKWARD | MOTOR_2_BACKWARD);
             }
-        }
-        if (data == SIGNAL_MOTOR_2_STOP) {
-            P4->OUT &= MOTOR_2_STOP; // set motor_2 to off
-        } else {
-            if (data == SIGNAL_MOTOR_2_FORWARD) {
-                P4->OUT &= MOTOR_2_STOP; // set motor_2 to off
-                P4->OUT |= MOTOR_2_FORWARD;
+            if (data == SIGNAL_LEFT) {
+                MOTOR_PORT->OUT |= (MOTOR_2_FORWARD);
             }
-            if (data == SIGNAL_MOTOR_2_BACKWARD) {
-                P4->OUT &= MOTOR_2_STOP; // set motor_2 to off
-                P4->OUT |= MOTOR_2_BACKWARD;
+            if (data == SIGNAL_RIGHT) {
+                MOTOR_PORT->OUT |= (MOTOR_1_FORWARD);
             }
         }
     }
@@ -231,10 +224,10 @@ void main(void)
     setup(BTN_PORT, FORWARD | BACKWARD, LEFT | RIGHT,
           RT_PORT, RECEIVER, TRANSMITTER);
 
+    int i;
     while(true) {
 //      Delay for switch debouncing
         for (i = 0; i < DELAY; i++) {}
-
 
 //  1)  Read BTNs
         bool f_Pressed = (BTN_PORT->IN & FORWARD) == FORWARD;
@@ -255,7 +248,6 @@ void main(void)
         } else {
             send(SIGNAL_STOP);
         }
-
     }
 }
 
@@ -301,7 +293,7 @@ void setup(
  **************************/
 void send(char data) {
     while ((EUSCI_A2->IFG & BIT1) == 0);  // Busy.  Wait for previous output.
-    EUSCI_A2->TXBUF = data;                // Start transmission when IFG = 1.
+    EUSCI_A2->TXBUF = data;               // Start transmission when IFG = 1.
 }
 
 /*****************************************************
